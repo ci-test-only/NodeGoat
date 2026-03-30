@@ -154,5 +154,59 @@ MongoClient.connect(db, (err, db) => {
     });
     */
 
+    // ---- Vulnerable endpoints for testing ----
+    const { exec } = require("child_process");
+    const fs = require("fs");
+
+    // Command Injection
+    app.get("/api/vuln/cmd", (req, res) => {
+        exec("ls " + req.query.dir, (err, stdout) => {
+            res.send(stdout || err.message);
+        });
+    });
+
+    // SQL/NoSQL Injection
+    app.get("/api/vuln/user", (req, res) => {
+        db.collection("users").find({
+            $where: "this.name === '" + req.query.name + "'"
+        }).toArray((err, docs) => {
+            res.json(docs || err);
+        });
+    });
+
+    // XSS - Reflected
+    app.get("/api/vuln/greet", (req, res) => {
+        res.send("<html><body><h1>Hello, " + req.query.name + "!</h1></body></html>");
+    });
+
+    // Path Traversal
+    app.get("/api/vuln/file", (req, res) => {
+        const content = fs.readFileSync("/data/" + req.query.path, "utf8");
+        res.send(content);
+    });
+
+    // Open Redirect
+    app.get("/api/vuln/redirect", (req, res) => {
+        res.redirect(req.query.url);
+    });
+
+    // SSRF
+    app.get("/api/vuln/fetch", (req, res) => {
+        const http = require("http");
+        http.get(req.query.url, (resp) => {
+            let data = "";
+            resp.on("data", (chunk) => { data += chunk; });
+            resp.on("end", () => { res.send(data); });
+        });
+    });
+
+    // Hardcoded secret
+    app.get("/api/vuln/token", (req, res) => {
+        const apiKey = "sk-proj-abc123secretkey456";
+        const jwt = require("jsonwebtoken");
+        const token = jwt.sign({ user: req.query.user }, apiKey);
+        res.json({ token: token });
+    });
+
 });
 // baseline
