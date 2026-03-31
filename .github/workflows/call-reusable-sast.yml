@@ -1,0 +1,10 @@
+name: Call Reusable SAST
+on:
+  workflow_dispatch: {}
+jobs:
+  call-polaris:
+    uses: ./.github/workflows/polaris-reusable.yml
+    with:
+      assessment_types: 'SAST'
+    secrets:
+      POLARIS_ACCESS_TOKEN: ${{ secrets.POLARIS_ACCESS_TOKEN }}
