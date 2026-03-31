@@ -1,10 +1,10 @@
-name: Call Reusable SAST # Caller workflow：呼叫 reusable workflow 執行 SAST 掃描
+name: Call Reusable SAST # Caller workflow: invokes reusable workflow for SAST scan
 on:
-  workflow_dispatch: {} # 只能手動觸發（demo 用）
+  workflow_dispatch: {} # Manual trigger only (for demo)
 jobs:
   call-polaris:
-    uses: ./.github/workflows/polaris-reusable.yml # 呼叫同 repo 的 reusable workflow
+    uses: ./.github/workflows/polaris-reusable.yml # Call reusable workflow in same repo
     with:
-      assessment_types: 'SAST' # 傳入掃描類型：只跑 SAST
+      assessment_types: 'SAST' # Pass scan type: SAST only
     secrets:
-      POLARIS_ACCESS_TOKEN: ${{ secrets.POLARIS_ACCESS_TOKEN }} # 傳入 Polaris Token
+      POLARIS_ACCESS_TOKEN: ${{ secrets.POLARIS_ACCESS_TOKEN }} # Pass Polaris token
