@@ -1,4 +1,4 @@
-name: Test Bridge CLI YAML v2
+name: Test Bridge CLI YAML v3
 on:
   workflow_dispatch: {}
 
@@ -25,8 +25,14 @@ jobs:
           unzip -o bridge-cli.zip -d /tmp/bridge-cli
       - name: Run Polaris Scan
         run: |
+          set +e
           /tmp/bridge-cli/bridge-cli-bundle-linux64/bridge-cli --stage polaris
           EXIT_CODE=$?
+          set -e
+          # Exit code reference:
+          #   0 = scan passed, no policy violations
+          #   8 = policy violation detected (Polaris Issue Policy with "Attempt Build Break")
+          #   2 = scan error (e.g. SCA entitlement issue, network error)
           if [ $EXIT_CODE -eq 0 ]; then
             echo "Polaris scan passed"
           elif [ $EXIT_CODE -eq 8 ]; then
