@@ -1,0 +1,40 @@
+name: Test Bridge CLI Final
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  polaris-scan:
+    runs-on: ubuntu-latest
+    env:
+      BRIDGE_POLARIS_SERVERURL: ${{ vars.POLARIS_URL }}
+      BRIDGE_POLARIS_ACCESSTOKEN: ${{ secrets.POLARIS_ACCESS_TOKEN }}
+      BRIDGE_POLARIS_APPLICATION_NAME: ${{ github.repository_owner }}
+      BRIDGE_POLARIS_PROJECT_NAME: ${{ github.event.repository.name }}
+      BRIDGE_POLARIS_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+      BRIDGE_POLARIS_ASSESSMENT_TYPES: 'SAST'
+      BRIDGE_GITHUB_USER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Bridge CLI
+        run: |
+          curl -fLsS -o bridge-cli.zip https://repo.blackduck.com/bds-integrations-release/com/blackduck/integration/bridge/binaries/bridge-cli-bundle/latest/bridge-cli-bundle-linux64.zip
+          unzip -o bridge-cli.zip -d /tmp/bridge-cli
+      - name: Run Polaris Scan
+        run: |
+          set +e
+          /tmp/bridge-cli/bridge-cli-bundle-linux64/bridge-cli --stage polaris
+          EXIT_CODE=$?
+          set -e
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "Polaris scan passed"
+          elif [ $EXIT_CODE -eq 8 ]; then
+            echo "::error::Policy violation detected (exit code 8) — breaking the build"
+            exit 1
+          else
+            echo "::error::Scan error (exit code $EXIT_CODE) — check logs for details"
+            exit 1
+          fi
