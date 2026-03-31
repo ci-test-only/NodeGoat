@@ -1,0 +1,36 @@
+name: Polaris Scan (Exit Code Test)
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  polaris-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Black Duck Security Scan
+        id: polaris
+        continue-on-error: true
+        uses: blackduck-inc/black-duck-security-scan@v2
+        with:
+          polaris_server_url: ${{ vars.POLARIS_URL }}
+          polaris_access_token: ${{ secrets.POLARIS_ACCESS_TOKEN }}
+          polaris_assessment_types: 'SAST'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Handle scan result
+        run: |
+          echo "Scan step outcome: ${{ steps.polaris.outcome }}"
+          echo "Scan step conclusion: ${{ steps.polaris.conclusion }}"
+          if [ "${{ steps.polaris.outcome }}" = "failure" ]; then
+            echo "::warning::Polaris scan detected issues — check Polaris for details"
+            # Change exit 1 to exit 0 if you want to warn only without failing the build
+            exit 1
+          else
+            echo "Polaris scan passed"
+          fi
