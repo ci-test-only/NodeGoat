@@ -1,34 +1,34 @@
-name: Polaris Scan
+name: Polaris Scan # Workflow 名稱，顯示在 GitHub Actions 頁面
 
 on:
-  push:
+  push: # push 到指定 branch 時自動觸發
     branches: [master, main, develop]
-  pull_request:
+  pull_request: # 開/更新 PR 到指定 branch 時自動觸發
     branches: [master, main, develop]
-  workflow_dispatch: {}
+  workflow_dispatch: {} # 允許在 Actions 頁面手動觸發（Run workflow 按鈕）
 
 permissions:
-  contents: read
-  pull-requests: write
+  contents: read # 讀取 repo 內容（checkout 需要）
+  pull-requests: write # 寫入 PR comment（prComment 需要）
 
 jobs:
   polaris-scan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # 使用 GitHub 提供的 Ubuntu runner
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4 # 拉取 repo 原始碼
       - name: Black Duck Security Scan
-        uses: blackduck-inc/black-duck-security-scan@v2
+        uses: blackduck-inc/black-duck-security-scan@v2 # Black Duck Security Action（Plugin）
         with:
-          polaris_server_url: ${{ vars.POLARIS_URL }}
-          polaris_access_token: ${{ secrets.POLARIS_ACCESS_TOKEN }}
-          polaris_application_name: ${{ github.repository_owner }}
-          polaris_project_name: ${{ github.event.repository.name }}
-          polaris_branch_name: ${{ github.head_ref || github.ref_name }}
-          polaris_branch_parent_name: ${{ github.base_ref || 'master' }}
-          polaris_assessment_types: 'SAST,SCA'
-          polaris_test_sast_type: ${{ github.event_name == 'pull_request' && 'SAST-RAPID' || 'SAST-FULL' }}
-          polaris_prComment_enabled: ${{ github.event_name == 'pull_request' }}
-          polaris_prComment_severities: 'CRITICAL,HIGH,MEDIUM'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          polaris_server_url: ${{ vars.POLARIS_URL }} # Polaris 伺服器 URL（repo/org variable）
+          polaris_access_token: ${{ secrets.POLARIS_ACCESS_TOKEN }} # Polaris API Token（repo/org secret）
+          polaris_application_name: ${{ github.repository_owner }} # Polaris Application 名稱 = GitHub org 名稱
+          polaris_project_name: ${{ github.event.repository.name }} # Polaris Project 名稱 = GitHub repo 名稱
+          polaris_branch_name: ${{ github.head_ref || github.ref_name }} # PR 時用 head branch，push 時用當前 branch
+          polaris_branch_parent_name: ${{ github.base_ref || 'master' }} # PR 時用 base branch，push 時預設 master
+          polaris_assessment_types: 'SAST,SCA' # 掃描類型：SAST（靜態分析）+ SCA（軟體組成分析）
+          polaris_test_sast_type: ${{ github.event_name == 'pull_request' && 'SAST-RAPID' || 'SAST-FULL' }} # PR 用快速掃描，push 用完整掃描
+          polaris_prComment_enabled: ${{ github.event_name == 'pull_request' }} # PR 時自動開啟 PR comment
+          polaris_prComment_severities: 'CRITICAL,HIGH,MEDIUM' # PR comment 只顯示這些嚴重等級的 issues
+          github_token: ${{ secrets.GITHUB_TOKEN }} # GitHub Token（Plugin 需要，用來 post PR comment 和建 Check）
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Bridge CLI 也需要（env 方式傳入）

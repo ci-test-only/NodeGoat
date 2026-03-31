@@ -1,20 +1,20 @@
-name: Polaris SAST (Weekly)
+name: Polaris SAST (Weekly) # 每週 SAST 掃描
 on:
   schedule:
-    - cron: '0 3 * * 1'
-  workflow_dispatch: {}
+    - cron: '0 3 * * 1' # 每週一 UTC 03:00 自動執行（台灣時間 11:00）
+  workflow_dispatch: {} # 允許手動觸發
 permissions:
-  contents: read
+  contents: read # 讀取 repo 內容
 jobs:
   polaris-sast:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4 # 拉取原始碼
       - uses: blackduck-inc/black-duck-security-scan@v2
         with:
-          polaris_server_url: ${{ vars.POLARIS_URL }}
-          polaris_access_token: ${{ secrets.POLARIS_ACCESS_TOKEN }}
-          polaris_application_name: ${{ github.repository_owner }}
-          polaris_project_name: ${{ github.event.repository.name }}
-          polaris_assessment_types: 'SAST'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          polaris_server_url: ${{ vars.POLARIS_URL }} # Polaris 伺服器 URL
+          polaris_access_token: ${{ secrets.POLARIS_ACCESS_TOKEN }} # Polaris API Token
+          polaris_application_name: ${{ github.repository_owner }} # Application = org 名稱
+          polaris_project_name: ${{ github.event.repository.name }} # Project = repo 名稱
+          polaris_assessment_types: 'SAST' # 只跑 SAST（靜態分析），不跑 SCA
+          github_token: ${{ secrets.GITHUB_TOKEN }} # GitHub Token

@@ -1,25 +1,25 @@
-name: Polaris Reusable Scan
+name: Polaris Reusable Scan # 可重用的掃描 workflow，供其他 workflow 呼叫
 on:
-  workflow_call:
+  workflow_call: # 只能被其他 workflow 呼叫，不能單獨觸發
     inputs:
-      assessment_types:
+      assessment_types: # 呼叫方傳入的掃描類型（如 'SAST' 或 'SCA' 或 'SAST,SCA'）
         required: true
         type: string
     secrets:
-      POLARIS_ACCESS_TOKEN:
+      POLARIS_ACCESS_TOKEN: # 呼叫方必須傳入 Polaris Token
         required: true
 permissions:
-  contents: read
+  contents: read # 讀取 repo 內容
 jobs:
   polaris-scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4 # 拉取原始碼
       - uses: blackduck-inc/black-duck-security-scan@v2
         with:
-          polaris_server_url: ${{ vars.POLARIS_URL }}
-          polaris_access_token: ${{ secrets.POLARIS_ACCESS_TOKEN }}
-          polaris_application_name: ${{ github.repository_owner }}
-          polaris_project_name: ${{ github.event.repository.name }}
-          polaris_assessment_types: ${{ inputs.assessment_types }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          polaris_server_url: ${{ vars.POLARIS_URL }} # Polaris 伺服器 URL
+          polaris_access_token: ${{ secrets.POLARIS_ACCESS_TOKEN }} # 從呼叫方傳入的 Token
+          polaris_application_name: ${{ github.repository_owner }} # Application = org 名稱
+          polaris_project_name: ${{ github.event.repository.name }} # Project = repo 名稱
+          polaris_assessment_types: ${{ inputs.assessment_types }} # 從呼叫方傳入的掃描類型
+          github_token: ${{ secrets.GITHUB_TOKEN }} # GitHub Token
