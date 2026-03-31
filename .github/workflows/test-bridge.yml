@@ -1,4 +1,4 @@
-name: Test Bridge CLI YAML
+name: Test Bridge CLI YAML v2
 on:
   workflow_dispatch: {}
 
@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Download Bridge CLI
         run: |
-          curl -fLsS -o bridge-cli.zip https://sig-repo.synopsys.com/artifactory/bds-integrations-release/com/blackduck/integration/bridge-cli/latest/bridge-cli-bundle-linux64.zip
+          curl -fLsS -o bridge-cli.zip https://repo.blackduck.com/bds-integrations-release/com/blackduck/integration/bridge/binaries/bridge-cli-bundle/latest/bridge-cli-bundle-linux64.zip
           unzip -o bridge-cli.zip -d /tmp/bridge-cli
       - name: Run Polaris Scan
         run: |
