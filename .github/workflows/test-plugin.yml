@@ -1,0 +1,25 @@
+name: Test Plugin YAML
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  polaris-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Black Duck Security Scan
+        uses: blackduck-inc/black-duck-security-scan@v2
+        with:
+          polaris_server_url: ${{ vars.POLARIS_URL }}
+          polaris_access_token: ${{ secrets.POLARIS_ACCESS_TOKEN }}
+          polaris_assessment_types: 'SAST'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          polaris_application_name: ${{ github.repository_owner }}
+          polaris_prComment_enabled: ${{ github.event_name == 'pull_request' }}
+          polaris_test_sast_type: ${{ github.event_name == 'pull_request' && 'SAST-RAPID' || 'SAST-FULL' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
