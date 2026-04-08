@@ -1,0 +1,30 @@
+name: Polaris PR Comment Test (SAST+SCA)
+on:
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Polaris SAST+SCA with PR Comment
+        uses: blackduck-inc/black-duck-security-scan@v2
+        with:
+          polaris_server_url: https://polaris.blackduck.com
+          polaris_access_token: ${{ secrets.POLARIS_ACCESS_TOKEN }}
+          polaris_assessment_types: 'SAST,SCA'
+          polaris_test_sast_type: 'SAST_FULL'
+          # Enable PR comments for both SAST and SCA
+          polaris_prComment_enabled: 'true'
+          polaris_prComment_severities: 'CRITICAL,HIGH,MEDIUM'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
