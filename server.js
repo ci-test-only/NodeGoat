@@ -156,3 +156,20 @@ MongoClient.connect(db, (err, db) => {
 
 });
 // baseline
+
+// ============ Vulnerable endpoints for PR comment test ============
+
+// SQL/NoSQL Injection - will trigger SAST
+app.get("/api/test/nosql", (req, res) => {
+    db.collection("users").find({ username: req.query.user }).toArray((err, docs) => {
+        res.json(docs);
+    });
+});
+
+// Path Traversal - will trigger SAST  
+app.get("/api/test/file", (req, res) => {
+    const fs = require("fs");
+    fs.readFile(req.query.path, "utf8", (err, data) => {
+        res.send(data);
+    });
+});
