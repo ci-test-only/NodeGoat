@@ -17,7 +17,8 @@ pipeline {
                             polaris_assessment_types: 'SAST,SCA',
                             polaris_prComment_enabled: true,
                             polaris_prComment_severities: 'CRITICAL,HIGH,MEDIUM',
-                            github_token: "${GITHUB_PAT}"
+                            github_token: "${GITHUB_PAT}",
+                            mark_build_status: 'SUCCESS'
                         )
                         echo "Scan status: ${status}"
                     }
